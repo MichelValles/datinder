@@ -39,12 +39,12 @@ export async function startQuiz(formData: FormData) {
 
   const supabase = db()
 
-  // Reuse existing quiz or create one with questions
-  const { data: existing } = await supabase
-    .from('quizzes')
-    .select('id')
-    .limit(1)
-    .maybeSingle()
+  const requestedId = (formData.get('quizId') as string) || null
+
+  // Find the target quiz (specific if quizId provided, otherwise any finalized)
+  const { data: existing } = requestedId
+    ? await supabase.from('quizzes').select('id').eq('id', requestedId).eq('is_finalized', true).maybeSingle()
+    : await supabase.from('quizzes').select('id').eq('is_finalized', true).limit(1).maybeSingle()
 
   let quizId: string
 

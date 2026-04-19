@@ -1,6 +1,13 @@
 import { startQuiz } from './actions'
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const sp = await searchParams
+  const quizId = typeof sp.quiz === 'string' ? sp.quiz : undefined
+
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-[#163b4f] p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm">
@@ -16,6 +23,7 @@ export default function Home() {
         </div>
 
         <form action={startQuiz} className="flex flex-col gap-4">
+          {quizId && <input type="hidden" name="quizId" value={quizId} />}
           <input
             type="text"
             name="name"

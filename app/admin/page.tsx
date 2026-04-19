@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { createQuiz, logoutAdmin } from './actions'
 
 export default async function AdminPage() {
@@ -7,6 +8,10 @@ export default async function AdminPage() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
+
+  const h = await headers()
+  const host = h.get('host') ?? 'datinder.vercel.app'
+  const proto = host.startsWith('localhost') ? 'http' : 'https'
 
   const { data: quizzes } = await supabase
     .from('quizzes')
@@ -74,12 +79,25 @@ export default async function AdminPage() {
                 })}
               </p>
             </div>
-            <Link
-              href={`/admin/quiz/${q.id}`}
-              className="bg-[#163b4f] hover:bg-[#1e4d67] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shrink-0"
-            >
-              Editar
-            </Link>
+            <div className="flex items-center gap-2 shrink-0">
+              {q.is_finalized && (
+                <a
+                  href={`${proto}://${host}/?quiz=${q.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Abrir quiz"
+                  className="bg-[#edbe00] hover:bg-[#c9a100] text-[#021f35] text-sm font-bold px-3 py-2 rounded-xl transition-colors"
+                >
+                  ↗
+                </a>
+              )}
+              <Link
+                href={`/admin/quiz/${q.id}`}
+                className="bg-[#163b4f] hover:bg-[#1e4d67] text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              >
+                Editar
+              </Link>
+            </div>
           </div>
         ))}
       </div>

@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import { updateQuizSettings, toggleFinalized, deleteQuiz, clearParticipants } from '../../actions'
 import ConfirmForm from '../../components/ConfirmForm'
+import QuizUrlBar from './QuizUrlBar'
 
 export default async function QuizSettingsPage({
   params,
@@ -39,6 +41,11 @@ export default async function QuizSettingsPage({
     participantCount = new Set(responses?.map((r) => r.user_id) ?? []).size
   }
 
+  const h = await headers()
+  const host = h.get('host') ?? 'datinder.vercel.app'
+  const proto = host.startsWith('localhost') ? 'http' : 'https'
+  const quizUrl = `${proto}://${host}/?quiz=${quizId}`
+
   const saveSettings = updateQuizSettings.bind(null, quizId)
   const toggleAction = toggleFinalized.bind(null, quizId, quiz.is_finalized)
   const deleteAction = deleteQuiz.bind(null, quizId)
@@ -65,6 +72,19 @@ export default async function QuizSettingsPage({
           </div>
         ))}
       </div>
+
+      {/* Quiz URL — only when published */}
+      {quiz.is_finalized && (
+        <div className="bg-[#163b4f] rounded-2xl p-6">
+          <h2 className="text-xs font-bold text-white/50 uppercase tracking-widest mb-1">
+            URL del Quiz
+          </h2>
+          <p className="text-white/70 text-xs mb-4">
+            Comparte este enlace para que los participantes puedan acceder al quiz.
+          </p>
+          <QuizUrlBar url={quizUrl} />
+        </div>
+      )}
 
       {/* Title */}
       <div className="bg-white border border-[#d0d8e0] rounded-2xl p-6">
