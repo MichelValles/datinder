@@ -69,8 +69,8 @@ export default async function Home({
   const quizTitle = data?.title ?? null
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-start sm:justify-center bg-[#163b4f] p-4 pt-10 sm:pt-4 pb-24">
-      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-[#163b4f] p-4 pb-24">
+      <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mb-16">
         <div className="flex items-center justify-center gap-2.5 mb-7">
           <img src="/images/logo-yellow.svg" alt="DaTinder" className="h-10 w-auto" />
           <span className="text-[#021f35] font-bold text-2xl tracking-tight">datinder</span>
