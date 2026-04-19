@@ -18,10 +18,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? 'datinder2024'
 
 export async function loginAdmin(_: unknown, formData: FormData) {
   const password = formData.get('password') as string
-
-  if (password !== ADMIN_PASSWORD) {
-    return { error: 'Contraseña incorrecta' }
-  }
+  if (password !== ADMIN_PASSWORD) return { error: 'Contraseña incorrecta' }
 
   const cookieStore = await cookies()
   cookieStore.set('admin_session', 'authenticated', {
@@ -30,7 +27,6 @@ export async function loginAdmin(_: unknown, formData: FormData) {
     maxAge: 60 * 60 * 24 * 7,
     path: '/',
   })
-
   redirect('/admin')
 }
 
@@ -47,7 +43,6 @@ export async function createQuiz(formData: FormData) {
   if (!title) return
 
   const supabase = db()
-
   const { data: quiz, error } = await supabase
     .from('quizzes')
     .insert({ title })
@@ -56,7 +51,6 @@ export async function createQuiz(formData: FormData) {
 
   if (error || !quiz) return
 
-  // Insert 20 blank questions
   await supabase.from('questions').insert(
     Array.from({ length: 20 }, (_, i) => ({
       quiz_id: quiz.id,
@@ -69,18 +63,19 @@ export async function createQuiz(formData: FormData) {
   redirect(`/admin/quiz/${quiz.id}`)
 }
 
-export async function saveQuiz(quizId: string, formData: FormData) {
+export async function updateQuizSettings(quizId: string, formData: FormData) {
   const title = (formData.get('title') as string)?.trim()
-  const supabase = db()
+  if (title) {
+    await db().from('quizzes').update({ title }).eq('id', quizId)
+  }
+  revalidatePath(`/admin/quiz/${quizId}`)
+  revalidatePath('/admin')
+}
 
+export async function saveQuestions(quizId: string, formData: FormData) {
+  const supabase = db()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const updates: PromiseLike<any>[] = []
-
-  if (title) {
-    updates.push(
-      supabase.from('quizzes').update({ title }).eq('id', quizId)
-    )
-  }
 
   for (let i = 1; i <= 20; i++) {
     const id = formData.get(`qid_${i}`) as string
@@ -97,7 +92,7 @@ export async function saveQuiz(quizId: string, formData: FormData) {
   }
 
   await Promise.all(updates)
-  revalidatePath(`/admin/quiz/${quizId}`)
+  revalidatePath(`/admin/quiz/${quizId}/questions`)
   return { success: true }
 }
 
@@ -111,4 +106,40 @@ export async function deleteQuiz(quizId: string) {
   await db().from('quizzes').delete().eq('id', quizId)
   revalidatePath('/admin')
   redirect('/admin')
+}
+
+// ── Participants ──────────────────────────────────────────────────────────────
+
+export async function clearParticipants(quizId: string) {
+  const supabase = db()
+
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('id')
+    .eq('quiz_id', quizId)
+
+  if (!questions?.length) {
+    revalidatePath(`/admin/quiz/${quizId}/participants`)
+    return
+  }
+
+  const qIds = questions.map((q) => q.id)
+
+  const { data: responses } = await supabase
+    .from('responses')
+    .select('user_id')
+    .in('question_id', qIds)
+
+  const userIds = [...new Set(responses?.map((r) => r.user_id) ?? [])]
+
+  if (userIds.length) {
+    await supabase.from('users').delete().in('id', userIds)
+  }
+
+  revalidatePath(`/admin/quiz/${quizId}/participants`)
+}
+
+export async function deleteParticipant(userId: string, quizId: string) {
+  await db().from('users').delete().eq('id', userId)
+  revalidatePath(`/admin/quiz/${quizId}/participants`)
 }
