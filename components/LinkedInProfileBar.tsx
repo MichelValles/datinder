@@ -16,6 +16,7 @@ export default function LinkedInProfileBar() {
   const router = useRouter()
   const pathname = usePathname()
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [collapsed, setCollapsed] = useState(false)
   const [signingOut, setSigningOut] = useState(false)
 
   useEffect(() => {
@@ -40,6 +41,30 @@ export default function LinkedInProfileBar() {
     localStorage.removeItem('datinder_identity')
     router.push('/')
     router.refresh()
+  }
+
+  // Collapsed: show small avatar button top-right
+  if (collapsed) {
+    return (
+      <Link
+        href="/profile"
+        className="fixed top-3 right-3 z-50 flex items-center gap-2 bg-[#021f35]/90 backdrop-blur-sm border border-white/10 rounded-full pl-1 pr-3 py-1 shadow-xl hover:bg-[#021f35] transition-colors"
+        title={profile.name}
+      >
+        {profile.avatarUrl ? (
+          <img
+            src={profile.avatarUrl}
+            alt={profile.name}
+            className="w-7 h-7 rounded-full object-cover ring-2 ring-[#0A66C2]"
+          />
+        ) : (
+          <div className="w-7 h-7 rounded-full bg-[#0A66C2] flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-xs">{profile.name[0].toUpperCase()}</span>
+          </div>
+        )}
+        <img src="/images/logo-yellow.svg" alt="datinder" className="h-4 w-auto" />
+      </Link>
+    )
   }
 
   return (
@@ -79,9 +104,20 @@ export default function LinkedInProfileBar() {
             <button
               onClick={handleSignOut}
               disabled={signingOut}
-              className="cursor-pointer text-white/40 hover:text-red-400 text-xs transition-colors"
+              className="text-white/40 hover:text-red-400 text-xs transition-colors"
             >
               {signingOut ? '...' : 'Salir'}
+            </button>
+            <span className="text-white/20">·</span>
+            <button
+              onClick={() => setCollapsed(true)}
+              className="text-white/30 hover:text-white/70 transition-colors p-0.5"
+              title="Minimizar"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
         </div>
