@@ -60,11 +60,9 @@ VERCEL_OIDC_TOKEN=<jwt generado por Vercel para el entorno dev>
 ## Tokens y claves de gestión
 
 ### Supabase Personal Access Token (PAT)
-```
-sbp_1255ec2e50a1e1cbc03558b28252d672dad0340f
-```
 - **Uso:** Llamadas a la Supabase Management API (migraciones de schema, configuración de providers)
 - **Endpoint API:** `https://api.supabase.com/v1/projects/xvvqpdvakyptsjnoehrs/...`
+- **Obtener el token:** https://supabase.com/dashboard/account/tokens
 - **No va en el código fuente ni en `.env`** — es una clave personal del portal de Supabase
 
 ### Cómo se usó el PAT
