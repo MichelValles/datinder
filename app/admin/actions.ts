@@ -177,6 +177,7 @@ export async function clearParticipants(quizId: string) {
   const userIds = [...new Set(responses?.map((r) => r.user_id) ?? [])]
 
   if (userIds.length) {
+    await supabase.from('responses').delete().in('user_id', userIds)
     await supabase.from('users').delete().in('id', userIds)
   }
 
@@ -186,6 +187,7 @@ export async function clearParticipants(quizId: string) {
 }
 
 export async function deleteParticipant(userId: string, quizId: string) {
+  await db().from('responses').delete().eq('user_id', userId)
   await db().from('users').delete().eq('id', userId)
   revalidatePath(`/admin/quiz/${quizId}/participants`)
 }
