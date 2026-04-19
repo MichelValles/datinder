@@ -137,6 +137,8 @@ export async function clearParticipants(quizId: string) {
   }
 
   revalidatePath(`/admin/quiz/${quizId}/participants`)
+  revalidatePath(`/admin/quiz/${quizId}`)
+  redirect(`/admin/quiz/${quizId}/participants`)
 }
 
 export async function deleteParticipant(userId: string, quizId: string) {

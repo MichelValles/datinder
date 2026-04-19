@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import { updateQuizSettings, toggleFinalized, deleteQuiz, clearParticipants } from '../../actions'
+import ConfirmForm from '../../components/ConfirmForm'
 
 export default async function QuizSettingsPage({
   params,
@@ -14,28 +15,34 @@ export default async function QuizSettingsPage({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const [{ data: quiz }, { data: questions }, { data: responses }] = await Promise.all([
-    supabase.from('quizzes').select('id, title, is_finalized, created_at').eq('id', quizId).single(),
-    supabase.from('questions').select('id', { count: 'exact' }).eq('quiz_id', quizId),
-    supabase
-      .from('responses')
-      .select('user_id', { count: 'exact' })
-      .in('question_id', await supabase
-        .from('questions')
-        .select('id')
-        .eq('quiz_id', quizId)
-        .then(r => (r.data ?? []).map(q => q.id))
-      ),
-  ])
+  const { data: quiz } = await supabase
+    .from('quizzes')
+    .select('id, title, is_finalized, created_at')
+    .eq('id', quizId)
+    .single()
 
   if (!quiz) notFound()
 
-  const participantCount = new Set(responses?.map(r => r.user_id) ?? []).size
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('id')
+    .eq('quiz_id', quizId)
 
-  const saveSettings = updateQuizSettings.bind(null, quizId)
-  const toggleAction = toggleFinalized.bind(null, quizId, quiz.is_finalized)
-  const deleteAction = deleteQuiz.bind(null, quizId)
-  const clearAction = clearParticipants.bind(null, quizId)
+  const qIds = questions?.map((q) => q.id) ?? []
+
+  let participantCount = 0
+  if (qIds.length > 0) {
+    const { data: responses } = await supabase
+      .from('responses')
+      .select('user_id')
+      .in('question_id', qIds)
+    participantCount = new Set(responses?.map((r) => r.user_id) ?? []).size
+  }
+
+  const saveSettings  = updateQuizSettings.bind(null, quizId)
+  const toggleAction  = toggleFinalized.bind(null, quizId, quiz.is_finalized)
+  const deleteAction  = deleteQuiz.bind(null, quizId)
+  const clearAction   = clearParticipants.bind(null, quizId)
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
@@ -43,10 +50,15 @@ export default async function QuizSettingsPage({
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Preguntas', value: questions?.length ?? 0 },
+          { label: 'Preguntas',     value: qIds.length },
           { label: 'Participantes', value: participantCount },
-          { label: 'Creado', value: new Date(quiz.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) },
-        ].map(s => (
+          {
+            label: 'Creado',
+            value: new Date(quiz.created_at).toLocaleDateString('es-ES', {
+              day: 'numeric', month: 'short',
+            }),
+          },
+        ].map((s) => (
           <div key={s.label} className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
             <div className="text-2xl font-bold text-white">{s.value}</div>
             <div className="text-xs text-gray-400 mt-1">{s.label}</div>
@@ -77,12 +89,12 @@ export default async function QuizSettingsPage({
         </form>
       </div>
 
-      {/* Publication status */}
+      {/* Publication */}
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
           Publicación
         </h2>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-white font-medium">
               {quiz.is_finalized ? 'Quiz activo' : 'Quiz en borrador'}
@@ -90,7 +102,7 @@ export default async function QuizSettingsPage({
             <p className="text-gray-400 text-sm mt-0.5">
               {quiz.is_finalized
                 ? 'Los usuarios pueden acceder y responder.'
-                : 'Solo visible desde el admin. Los usuarios no pueden acceder.'}
+                : 'Solo visible desde el admin.'}
             </p>
           </div>
           <form action={toggleAction}>
@@ -114,43 +126,44 @@ export default async function QuizSettingsPage({
           Zona de peligro
         </h2>
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between py-3 border-b border-gray-800">
+          <div className="flex items-center justify-between py-3 border-b border-gray-800 gap-4">
             <div>
               <p className="text-white text-sm font-medium">Vaciar participantes</p>
               <p className="text-gray-400 text-xs mt-0.5">
                 Elimina todos los usuarios y sus respuestas de este quiz.
               </p>
             </div>
-            <form action={clearAction} onSubmit={(e) => {
-              // eslint-disable-next-line no-undef
-              if (!confirm('¿Vaciar todos los participantes? Esta acción no se puede deshacer.')) e.preventDefault()
-            }}>
+            <ConfirmForm
+              action={clearAction}
+              message="¿Vaciar todos los participantes? Esta acción no se puede deshacer."
+            >
               <button
                 type="submit"
                 className="text-sm bg-gray-800 hover:bg-red-950 text-gray-300 hover:text-red-400 px-4 py-2 rounded-xl transition-colors shrink-0"
               >
                 Vaciar
               </button>
-            </form>
+            </ConfirmForm>
           </div>
-          <div className="flex items-center justify-between py-3">
+
+          <div className="flex items-center justify-between py-3 gap-4">
             <div>
               <p className="text-white text-sm font-medium">Eliminar quiz</p>
               <p className="text-gray-400 text-xs mt-0.5">
-                Elimina el quiz, sus preguntas y todas las respuestas permanentemente.
+                Elimina el quiz, preguntas y todas las respuestas permanentemente.
               </p>
             </div>
-            <form action={deleteAction} onSubmit={(e) => {
-              // eslint-disable-next-line no-undef
-              if (!confirm(`¿Eliminar "${quiz.title}"? Esta acción no se puede deshacer.`)) e.preventDefault()
-            }}>
+            <ConfirmForm
+              action={deleteAction}
+              message={`¿Eliminar "${quiz.title}"? Esta acción no se puede deshacer.`}
+            >
               <button
                 type="submit"
                 className="text-sm bg-red-950 hover:bg-red-900 text-red-400 px-4 py-2 rounded-xl transition-colors shrink-0"
               >
                 Eliminar
               </button>
-            </form>
+            </ConfirmForm>
           </div>
         </div>
       </div>

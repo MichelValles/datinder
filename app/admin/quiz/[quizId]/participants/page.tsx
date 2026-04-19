@@ -1,10 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { deleteParticipant, clearParticipants } from '../../../actions'
+import ConfirmForm from '../../../components/ConfirmForm'
 
 type ParticipantRow = {
   user_id: string
-  users: { id: string; name: string; created_at: string } | { id: string; name: string; created_at: string }[] | null
+  users:
+    | { id: string; name: string; created_at: string }
+    | { id: string; name: string; created_at: string }[]
+    | null
 }
 
 export default async function ParticipantsPage({
@@ -26,10 +30,12 @@ export default async function ParticipantsPage({
 
   const qIds = questions?.map((q) => q.id) ?? []
 
-  const { data: rawResponses } = await supabase
-    .from('responses')
-    .select('user_id, users(id, name, created_at)')
-    .in('question_id', qIds)
+  const { data: rawResponses } = qIds.length
+    ? await supabase
+        .from('responses')
+        .select('user_id, users(id, name, created_at)')
+        .in('question_id', qIds)
+    : { data: [] }
 
   // Deduplicate by user_id, count answers
   const userMap = new Map<
@@ -55,20 +61,15 @@ export default async function ParticipantsPage({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header row */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-semibold text-white">Participantes</h2>
           <p className="text-gray-400 text-sm mt-0.5">{participants.length} en total</p>
         </div>
         {participants.length > 0 && (
-          <form
+          <ConfirmForm
             action={clearAction}
-            onSubmit={(e) => {
-              if (!confirm('¿Eliminar todos los participantes y sus respuestas?'))
-                // eslint-disable-next-line no-undef
-                e.preventDefault()
-            }}
+            message="¿Eliminar todos los participantes y sus respuestas? Esta acción no se puede deshacer."
           >
             <button
               type="submit"
@@ -76,7 +77,7 @@ export default async function ParticipantsPage({
             >
               Vaciar todos
             </button>
-          </form>
+          </ConfirmForm>
         )}
       </div>
 
@@ -91,7 +92,10 @@ export default async function ParticipantsPage({
             {participants.map((p, i) => {
               const deleteAction = deleteParticipant.bind(null, p.id, quizId)
               return (
-                <div key={p.id} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-800/50 transition-colors">
+                <div
+                  key={p.id}
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-gray-800/50 transition-colors"
+                >
                   <span className="text-gray-600 text-sm w-6 text-right shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-white truncate">{p.name}</p>
@@ -112,21 +116,18 @@ export default async function ParticipantsPage({
                     >
                       Ver detalle
                     </Link>
-                    <form
+                    <ConfirmForm
                       action={deleteAction}
-                      onSubmit={(e) => {
-                        if (!confirm(`¿Eliminar a "${p.name}" y todas sus respuestas?`))
-                          // eslint-disable-next-line no-undef
-                          e.preventDefault()
-                      }}
+                      message={`¿Eliminar a "${p.name}" y todas sus respuestas?`}
                     >
                       <button
                         type="submit"
                         className="text-sm text-gray-600 hover:text-red-400 px-2 py-1.5 rounded-lg transition-colors"
+                        title="Eliminar participante"
                       >
                         ✕
                       </button>
-                    </form>
+                    </ConfirmForm>
                   </div>
                 </div>
               )
