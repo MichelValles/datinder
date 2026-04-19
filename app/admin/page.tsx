@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { headers } from 'next/headers'
 import { createQuiz, logoutAdmin } from './actions'
+import GlobalStatsChart from './GlobalStatsChart'
 
 export default async function AdminPage() {
   const supabase = createClient(
@@ -18,6 +19,41 @@ export default async function AdminPage() {
     .select('id, title, slug, is_finalized, created_at')
     .order('created_at', { ascending: false })
 
+  // Global stats: count participants per quiz
+  const quizIds = (quizzes ?? []).map((q) => q.id)
+
+  const { data: questions } = quizIds.length
+    ? await supabase.from('questions').select('id, quiz_id').in('quiz_id', quizIds)
+    : { data: [] }
+
+  const questionIds = (questions ?? []).map((q) => q.id)
+
+  const { data: responses } = questionIds.length
+    ? await supabase.from('responses').select('user_id, question_id').in('question_id', questionIds)
+    : { data: [] }
+
+  // Map quizId → unique participants
+  const quizParticipants = new Map<string, Set<string>>()
+  for (const q of questions ?? []) {
+    if (!quizParticipants.has(q.quiz_id)) quizParticipants.set(q.quiz_id, new Set())
+  }
+  for (const r of responses ?? []) {
+    const q = (questions ?? []).find((q) => q.id === r.question_id)
+    if (q) quizParticipants.get(q.quiz_id)?.add(r.user_id)
+  }
+
+  const totalParticipants = new Set((responses ?? []).map((r) => r.user_id)).size
+  const totalResponses = responses?.length ?? 0
+  const activeQuizzes = (quizzes ?? []).filter((q) => q.is_finalized).length
+
+  const chartData = (quizzes ?? [])
+    .map((q) => ({
+      title: q.title.length > 20 ? q.title.slice(0, 20) + '…' : q.title,
+      participants: quizParticipants.get(q.id)?.size ?? 0,
+    }))
+    .filter((q) => q.participants > 0)
+    .sort((a, b) => b.participants - a.participants)
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
 
@@ -29,6 +65,31 @@ export default async function AdminPage() {
           </button>
         </form>
       </div>
+
+      {/* Global stats */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-white border border-[#d0d8e0] rounded-2xl p-4 text-center">
+          <p className="text-[#163b4f]/50 text-xs font-semibold uppercase tracking-wide mb-1">Quizzes activos</p>
+          <p className="text-3xl font-bold text-[#021f35]">{activeQuizzes}</p>
+        </div>
+        <div className="bg-white border border-[#d0d8e0] rounded-2xl p-4 text-center">
+          <p className="text-[#163b4f]/50 text-xs font-semibold uppercase tracking-wide mb-1">Participantes</p>
+          <p className="text-3xl font-bold text-[#021f35]">{totalParticipants}</p>
+        </div>
+        <div className="bg-white border border-[#d0d8e0] rounded-2xl p-4 text-center">
+          <p className="text-[#163b4f]/50 text-xs font-semibold uppercase tracking-wide mb-1">Respuestas</p>
+          <p className="text-3xl font-bold text-[#021f35]">{totalResponses}</p>
+        </div>
+      </div>
+
+      {chartData.length > 0 && (
+        <div className="bg-white border border-[#d0d8e0] rounded-2xl p-5 mb-6">
+          <h2 className="text-xs font-bold text-[#163b4f] uppercase tracking-widest mb-4">
+            Participantes por quiz
+          </h2>
+          <GlobalStatsChart data={chartData} />
+        </div>
+      )}
 
       <div className="bg-white border border-[#d0d8e0] rounded-2xl p-6 mb-6">
         <h2 className="text-xs font-bold text-[#163b4f] uppercase tracking-widest mb-4">
@@ -57,7 +118,7 @@ export default async function AdminPage() {
           <p className="text-[#163b4f]/40 text-center py-12">No hay quizzes aún.</p>
         )}
 
-        {quizzes?.map(q => (
+        {quizzes?.map((q) => (
           <div
             key={q.id}
             className="bg-white border border-[#d0d8e0] rounded-2xl p-5 flex items-center gap-4 hover:border-[#163b4f]/30 transition-colors"
@@ -77,6 +138,10 @@ export default async function AdminPage() {
                 {new Date(q.created_at).toLocaleDateString('es-ES', {
                   day: 'numeric', month: 'short', year: 'numeric',
                 })}
+                {' · '}
+                <span className="font-semibold text-[#163b4f]/60">
+                  {quizParticipants.get(q.id)?.size ?? 0} participantes
+                </span>
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">

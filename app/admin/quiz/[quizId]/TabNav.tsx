@@ -4,9 +4,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const TABS = (quizId: string) => [
-  { label: 'Ajustes',       href: `/admin/quiz/${quizId}` },
-  { label: 'Preguntas',     href: `/admin/quiz/${quizId}/questions` },
-  { label: 'Participantes', href: `/admin/quiz/${quizId}/participants` },
+  { label: 'Ajustes',        href: `/admin/quiz/${quizId}` },
+  { label: 'Preguntas',      href: `/admin/quiz/${quizId}/questions` },
+  { label: 'Participantes',  href: `/admin/quiz/${quizId}/participants` },
+  { label: 'Estadísticas',   href: `/admin/quiz/${quizId}/stats` },
 ]
 
 export default function TabNav({ quizId }: { quizId: string }) {
