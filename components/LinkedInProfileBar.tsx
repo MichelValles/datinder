@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 
@@ -14,14 +14,14 @@ type Profile = { name: string; avatarUrl: string | null }
 
 export default function LinkedInProfileBar() {
   const router = useRouter()
+  const pathname = usePathname()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [signingOut, setSigningOut] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return
-      const provider = session.user.app_metadata?.provider
-      if (provider !== 'linkedin_oidc') return
+      if (session.user.app_metadata?.provider !== 'linkedin_oidc') return
       setProfile({
         name: session.user.user_metadata?.full_name
           ?? session.user.user_metadata?.name
@@ -32,6 +32,7 @@ export default function LinkedInProfileBar() {
   }, [])
 
   if (!profile) return null
+  if (pathname.startsWith('/admin')) return null
 
   async function handleSignOut() {
     setSigningOut(true)
@@ -42,8 +43,8 @@ export default function LinkedInProfileBar() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-sm mb-3 mx-3">
+    <div className="fixed bottom-0 left-0 right-0 sm:bottom-auto sm:top-0 z-50 flex justify-center pointer-events-none">
+      <div className="pointer-events-auto w-full max-w-sm mb-3 mx-3 sm:mb-0 sm:mt-3">
         <div className="flex items-center gap-3 bg-[#021f35]/95 backdrop-blur-sm border border-white/10 rounded-2xl px-4 py-3 shadow-2xl">
           {profile.avatarUrl ? (
             <img

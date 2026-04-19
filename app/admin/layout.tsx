@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import AdminLinkedInBadge from '@/components/AdminLinkedInBadge'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -26,6 +27,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="text-white/40 text-xs font-semibold tracking-[0.2em] uppercase select-none">
               Admin
             </span>
+            <AdminLinkedInBadge />
           </div>
         </div>
       </header>
