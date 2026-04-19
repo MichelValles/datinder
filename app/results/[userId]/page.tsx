@@ -30,11 +30,11 @@ export default async function ResultsPage({
 
   if (!myResponses?.length) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-pink-500 to-red-500 flex items-center justify-center p-4">
-        <div className="bg-white rounded-3xl p-8 text-center w-full max-w-sm shadow-xl">
+      <main className="min-h-screen bg-[#163b4f] flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-8 text-center w-full max-w-sm shadow-xl">
           <div className="text-5xl mb-4">😕</div>
-          <p className="text-gray-600 mb-6">No has respondido ninguna pregunta aún.</p>
-          <Link href="/" className="text-pink-500 font-bold">Volver al inicio</Link>
+          <p className="text-[#163b4f]/70 mb-6">No has respondido ninguna pregunta aún.</p>
+          <Link href="/" className="text-[#163b4f] font-bold">Volver al inicio</Link>
         </div>
       </main>
     )
@@ -49,7 +49,6 @@ export default async function ResultsPage({
     .in('question_id', myQuestionIds)
     .neq('user_id', userId)
 
-  // Calculate similarity per user
   const userMap = new Map<string, { name: string; matches: number; total: number }>()
 
   for (const row of ((otherResponses ?? []) as OtherResponse[])) {
@@ -76,19 +75,23 @@ export default async function ResultsPage({
     i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-500 to-red-500 p-4">
+    <main className="min-h-screen bg-[#163b4f] p-4">
       <div className="max-w-sm mx-auto">
         <div className="text-center pt-10 pb-6">
-          <div className="text-5xl mb-2">💘</div>
+          <img
+            src="https://i.ibb.co/8gNrP0q6/Chat-GPT-Image-May-29-2025-08-27-01-PM.png"
+            alt="DaTinder"
+            className="h-16 w-auto mx-auto mb-4 object-contain"
+          />
           <h1 className="text-3xl font-bold text-white">Tus matches</h1>
-          <p className="text-white/80 mt-1 text-sm">Hola, {currentUser.name}!</p>
+          <p className="text-white/60 mt-1 text-sm">Hola, {currentUser.name}!</p>
         </div>
 
         {ranking.length === 0 ? (
-          <div className="bg-white rounded-3xl p-8 text-center shadow-xl">
+          <div className="bg-white rounded-2xl p-8 text-center shadow-xl">
             <div className="text-4xl mb-3">🏝️</div>
-            <p className="text-gray-700 font-semibold">Aún eres el único aquí.</p>
-            <p className="text-gray-400 text-sm mt-2">
+            <p className="text-[#021f35] font-bold">Aún eres el único aquí.</p>
+            <p className="text-[#163b4f]/50 text-sm mt-2">
               ¡Comparte el quiz con tus amigos!
             </p>
           </div>
@@ -98,10 +101,10 @@ export default async function ResultsPage({
               const m = medal(i)
               const scoreColor =
                 r.similarity >= 80
-                  ? 'text-pink-500'
+                  ? 'text-[#163b4f]'
                   : r.similarity >= 60
-                  ? 'text-orange-400'
-                  : 'text-gray-400'
+                  ? 'text-[#c9a100]'
+                  : 'text-[#163b4f]/40'
 
               return (
                 <div
@@ -110,12 +113,12 @@ export default async function ResultsPage({
                 >
                   <div className="text-2xl w-9 text-center shrink-0">
                     {m ?? (
-                      <span className="text-gray-400 font-bold text-sm">{i + 1}</span>
+                      <span className="text-[#163b4f]/30 font-bold text-sm">{i + 1}</span>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-gray-800 truncate">{r.name}</div>
-                    <div className="text-xs text-gray-400">
+                    <div className="font-bold text-[#021f35] truncate">{r.name}</div>
+                    <div className="text-xs text-[#163b4f]/40">
                       {r.shared} preguntas en común
                     </div>
                   </div>
@@ -131,9 +134,9 @@ export default async function ResultsPage({
         <div className="mt-6 pb-10">
           <Link
             href="/"
-            className="block text-center bg-white/20 text-white border border-white/40 rounded-2xl py-4 font-semibold hover:bg-white/30 transition-colors"
+            className="block text-center bg-[#edbe00] hover:bg-[#c9a100] text-[#021f35] font-bold rounded-xl py-4 transition-colors"
           >
-            Repetir quiz 🔄
+            Repetir quiz →
           </Link>
         </div>
       </div>

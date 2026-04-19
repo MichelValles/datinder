@@ -39,13 +39,13 @@ export default async function QuizSettingsPage({
     participantCount = new Set(responses?.map((r) => r.user_id) ?? []).size
   }
 
-  const saveSettings  = updateQuizSettings.bind(null, quizId)
-  const toggleAction  = toggleFinalized.bind(null, quizId, quiz.is_finalized)
-  const deleteAction  = deleteQuiz.bind(null, quizId)
-  const clearAction   = clearParticipants.bind(null, quizId)
+  const saveSettings = updateQuizSettings.bind(null, quizId)
+  const toggleAction = toggleFinalized.bind(null, quizId, quiz.is_finalized)
+  const deleteAction = deleteQuiz.bind(null, quizId)
+  const clearAction  = clearParticipants.bind(null, quizId)
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
+    <div className="flex flex-col gap-5 max-w-2xl">
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
@@ -59,16 +59,16 @@ export default async function QuizSettingsPage({
             }),
           },
         ].map((s) => (
-          <div key={s.label} className="bg-gray-900 border border-gray-800 rounded-2xl p-4 text-center">
-            <div className="text-2xl font-bold text-white">{s.value}</div>
-            <div className="text-xs text-gray-400 mt-1">{s.label}</div>
+          <div key={s.label} className="bg-white border border-[#d0d8e0] rounded-2xl p-4 text-center">
+            <div className="text-2xl font-bold text-[#021f35]">{s.value}</div>
+            <div className="text-xs text-[#163b4f]/50 mt-1 font-medium">{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Title */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+      <div className="bg-white border border-[#d0d8e0] rounded-2xl p-6">
+        <h2 className="text-xs font-bold text-[#163b4f] uppercase tracking-widest mb-4">
           Nombre del Quiz
         </h2>
         <form action={saveSettings} className="flex gap-3">
@@ -78,11 +78,11 @@ export default async function QuizSettingsPage({
             defaultValue={quiz.title}
             required
             maxLength={100}
-            className="flex-1 bg-gray-800 border border-gray-700 text-white rounded-xl px-4 py-2.5 focus:outline-none focus:border-pink-500 transition-colors text-sm"
+            className="flex-1 bg-[#f4f7f9] border border-[#d0d8e0] text-[#021f35] rounded-xl px-4 py-2.5 focus:outline-none focus:border-[#163b4f] transition-colors text-sm"
           />
           <button
             type="submit"
-            className="bg-pink-600 hover:bg-pink-500 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors shrink-0"
+            className="bg-[#edbe00] hover:bg-[#c9a100] text-[#021f35] font-bold px-5 py-2.5 rounded-xl text-sm transition-colors shrink-0"
           >
             Guardar
           </button>
@@ -90,16 +90,16 @@ export default async function QuizSettingsPage({
       </div>
 
       {/* Publication */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+      <div className="bg-white border border-[#d0d8e0] rounded-2xl p-6">
+        <h2 className="text-xs font-bold text-[#163b4f] uppercase tracking-widest mb-4">
           Publicación
         </h2>
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-white font-medium">
+            <p className="text-[#021f35] font-semibold">
               {quiz.is_finalized ? 'Quiz activo' : 'Quiz en borrador'}
             </p>
-            <p className="text-gray-400 text-sm mt-0.5">
+            <p className="text-[#163b4f]/50 text-sm mt-0.5">
               {quiz.is_finalized
                 ? 'Los usuarios pueden acceder y responder.'
                 : 'Solo visible desde el admin.'}
@@ -108,10 +108,10 @@ export default async function QuizSettingsPage({
           <form action={toggleAction}>
             <button
               type="submit"
-              className={`text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shrink-0 ${
+              className={`text-sm font-bold px-5 py-2.5 rounded-xl transition-colors shrink-0 ${
                 quiz.is_finalized
-                  ? 'bg-yellow-900/50 hover:bg-yellow-900 text-yellow-400 border border-yellow-800'
-                  : 'bg-green-900/50 hover:bg-green-900 text-green-400 border border-green-800'
+                  ? 'bg-amber-100 hover:bg-amber-200 text-amber-700 border border-amber-200'
+                  : 'bg-green-100 hover:bg-green-200 text-green-700 border border-green-200'
               }`}
             >
               {quiz.is_finalized ? 'Volver a borrador' : 'Publicar quiz'}
@@ -121,15 +121,15 @@ export default async function QuizSettingsPage({
       </div>
 
       {/* Danger zone */}
-      <div className="bg-gray-900 border border-red-900/40 rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-red-400 uppercase tracking-wider mb-4">
+      <div className="bg-white border border-red-200 rounded-2xl p-6">
+        <h2 className="text-xs font-bold text-red-500 uppercase tracking-widest mb-4">
           Zona de peligro
         </h2>
         <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between py-3 border-b border-gray-800 gap-4">
+          <div className="flex items-center justify-between py-3 border-b border-[#f0e0e0] gap-4">
             <div>
-              <p className="text-white text-sm font-medium">Vaciar participantes</p>
-              <p className="text-gray-400 text-xs mt-0.5">
+              <p className="text-[#021f35] text-sm font-semibold">Vaciar participantes</p>
+              <p className="text-[#163b4f]/50 text-xs mt-0.5">
                 Elimina todos los usuarios y sus respuestas de este quiz.
               </p>
             </div>
@@ -139,7 +139,7 @@ export default async function QuizSettingsPage({
             >
               <button
                 type="submit"
-                className="text-sm bg-gray-800 hover:bg-red-950 text-gray-300 hover:text-red-400 px-4 py-2 rounded-xl transition-colors shrink-0"
+                className="text-sm bg-[#f4f7f9] hover:bg-red-50 text-[#163b4f]/60 hover:text-red-500 border border-[#d0d8e0] hover:border-red-200 px-4 py-2 rounded-xl transition-colors shrink-0"
               >
                 Vaciar
               </button>
@@ -148,8 +148,8 @@ export default async function QuizSettingsPage({
 
           <div className="flex items-center justify-between py-3 gap-4">
             <div>
-              <p className="text-white text-sm font-medium">Eliminar quiz</p>
-              <p className="text-gray-400 text-xs mt-0.5">
+              <p className="text-[#021f35] text-sm font-semibold">Eliminar quiz</p>
+              <p className="text-[#163b4f]/50 text-xs mt-0.5">
                 Elimina el quiz, preguntas y todas las respuestas permanentemente.
               </p>
             </div>
@@ -159,7 +159,7 @@ export default async function QuizSettingsPage({
             >
               <button
                 type="submit"
-                className="text-sm bg-red-950 hover:bg-red-900 text-red-400 px-4 py-2 rounded-xl transition-colors shrink-0"
+                className="text-sm bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-4 py-2 rounded-xl transition-colors shrink-0"
               >
                 Eliminar
               </button>

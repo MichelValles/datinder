@@ -55,62 +55,64 @@ export default function QuizClient({
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-500 to-red-500 flex flex-col items-center justify-center p-4">
+    <main className="min-h-screen bg-[#163b4f] flex flex-col items-center justify-center p-4">
       {/* Progress */}
-      <div className="w-full max-w-sm mb-5">
-        <div className="flex justify-between text-white/90 text-sm mb-2 font-medium">
-          <span>Pregunta {current + 1} de {questions.length}</span>
+      <div className="w-full max-w-sm mb-6">
+        <div className="flex justify-between text-white/70 text-xs mb-2 font-semibold uppercase tracking-widest">
+          <span>Pregunta {current + 1} / {questions.length}</span>
           <span>{Math.round(progress)}%</span>
         </div>
-        <div className="bg-white/30 rounded-full h-2">
+        <div className="bg-white/15 rounded-full h-1.5">
           <div
-            className="bg-white rounded-full h-2 transition-all duration-500 ease-out"
+            className="bg-[#edbe00] rounded-full h-1.5 transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
       {/* Card */}
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm">
-        <div className="p-7 text-center">
-          <div className="text-4xl mb-3">🤔</div>
-          <h2 className="text-base font-bold text-gray-700 mb-6">
-            {q.question_text || '¿Con cuál te identificas más?'}
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+        <div className="bg-[#163b4f] px-7 py-5 text-center">
+          <p className="text-white/60 text-xs font-bold uppercase tracking-widest">
+            ¿Con cuál te identificas más?
+          </p>
+          <h2 className="text-white text-lg font-bold mt-2 leading-snug">
+            {q.question_text || `Pregunta ${q.order_num}`}
           </h2>
+        </div>
 
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => handleAnswer(0)}
-              disabled={saving}
-              className={`py-5 px-5 rounded-2xl text-base font-semibold border-2 transition-all duration-200 text-left ${
-                selected === 0
-                  ? 'bg-pink-500 border-pink-500 text-white scale-[0.97]'
-                  : 'border-pink-200 text-pink-700 hover:bg-pink-50 active:scale-[0.97]'
-              }`}
-            >
-              <span className="text-[10px] font-bold uppercase tracking-widest opacity-50 block mb-1">
-                Opción A
-              </span>
-              {q.text_option_a}
-            </button>
+        <div className="p-5 flex flex-col gap-3">
+          <button
+            onClick={() => handleAnswer(0)}
+            disabled={saving}
+            className={`py-5 px-5 rounded-xl text-base font-semibold border-2 transition-all duration-200 text-left ${
+              selected === 0
+                ? 'bg-[#163b4f] border-[#163b4f] text-white scale-[0.97]'
+                : 'border-[#163b4f]/20 text-[#163b4f] hover:border-[#163b4f]/50 hover:bg-[#163b4f]/5 active:scale-[0.97]'
+            }`}
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest opacity-50 block mb-1">
+              Opción A
+            </span>
+            {q.text_option_a}
+          </button>
 
-            <p className="text-gray-300 text-sm font-semibold">— o —</p>
+          <p className="text-[#163b4f]/25 text-sm font-semibold text-center">— o —</p>
 
-            <button
-              onClick={() => handleAnswer(1)}
-              disabled={saving}
-              className={`py-5 px-5 rounded-2xl text-base font-semibold border-2 transition-all duration-200 text-left ${
-                selected === 1
-                  ? 'bg-red-500 border-red-500 text-white scale-[0.97]'
-                  : 'border-red-200 text-red-700 hover:bg-red-50 active:scale-[0.97]'
-              }`}
-            >
-              <span className="text-[10px] font-bold uppercase tracking-widest opacity-50 block mb-1">
-                Opción B
-              </span>
-              {q.text_option_b}
-            </button>
-          </div>
+          <button
+            onClick={() => handleAnswer(1)}
+            disabled={saving}
+            className={`py-5 px-5 rounded-xl text-base font-semibold border-2 transition-all duration-200 text-left ${
+              selected === 1
+                ? 'bg-[#edbe00] border-[#edbe00] text-[#021f35] scale-[0.97]'
+                : 'border-[#edbe00]/40 text-[#c9a100] hover:border-[#edbe00]/70 hover:bg-[#edbe00]/5 active:scale-[0.97]'
+            }`}
+          >
+            <span className="text-[10px] font-bold uppercase tracking-widest opacity-50 block mb-1">
+              Opción B
+            </span>
+            {q.text_option_b}
+          </button>
         </div>
       </div>
     </main>

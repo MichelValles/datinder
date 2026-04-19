@@ -26,26 +26,26 @@ export default async function QuizLayout({
   if (!quiz) notFound()
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="border-b border-gray-800 bg-gray-900/60">
-        <div className="max-w-4xl mx-auto px-6 pt-6 pb-0">
+    <div className="min-h-[calc(100vh-4rem)]">
+      <div className="bg-white border-b border-[#d0d8e0]">
+        <div className="max-w-4xl mx-auto px-6 pt-5 pb-0">
           <div className="flex items-center gap-2 text-sm mb-3">
-            <Link href="/admin" className="text-gray-400 hover:text-white transition-colors">
+            <Link
+              href="/admin"
+              className="text-[#163b4f]/50 hover:text-[#163b4f] transition-colors font-medium"
+            >
               Admin
             </Link>
-            <span className="text-gray-700">/</span>
-            <span className="text-gray-200 font-medium truncate max-w-xs">{quiz.title}</span>
-            <span
-              className={`ml-1 text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                quiz.is_finalized
-                  ? 'bg-green-900/60 text-green-400 border border-green-800'
-                  : 'bg-yellow-900/60 text-yellow-400 border border-yellow-800'
-              }`}
-            >
+            <span className="text-[#163b4f]/25">/</span>
+            <span className="text-[#021f35] font-semibold truncate max-w-xs">{quiz.title}</span>
+            <span className={`ml-1 text-xs px-2.5 py-0.5 rounded-full font-semibold shrink-0 ${
+              quiz.is_finalized
+                ? 'bg-green-100 text-green-700 border border-green-200'
+                : 'bg-amber-100 text-amber-700 border border-amber-200'
+            }`}>
               {quiz.is_finalized ? 'Activo' : 'Borrador'}
             </span>
           </div>
-
           <TabNav quizId={quizId} />
         </div>
       </div>
