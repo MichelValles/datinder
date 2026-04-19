@@ -43,7 +43,7 @@ function WaitingContent() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-[#163b4f] flex flex-col items-center justify-center p-6 text-center">
+    <main className="min-h-screen bg-[#163b4f] flex flex-col items-center justify-start sm:justify-center p-6 pt-10 sm:pt-6 text-center">
       <a href="/" className="flex items-center gap-2.5 mb-12">
         <img src="/images/logo-yellow.svg" alt="DaTinder" className="h-10 w-auto" />
         <span className="text-white font-bold text-2xl tracking-tight">datinder</span>

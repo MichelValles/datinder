@@ -87,7 +87,7 @@ export default function QuizClient({
   }
 
   return (
-    <main className="min-h-screen bg-[#f0f4f7] flex flex-col items-center justify-center p-4 sm:p-6">
+    <main className="min-h-screen bg-[#f0f4f7] flex flex-col items-center justify-start sm:justify-center p-4 pt-6 sm:p-6">
 
       {/* Logo + título */}
       <div className="flex flex-col items-center gap-1.5 mb-8">

@@ -23,7 +23,7 @@ export default async function Home({
       .order('created_at', { ascending: false })
 
     return (
-      <main className="min-h-screen bg-[#163b4f] flex flex-col items-center justify-center p-4">
+      <main className="min-h-screen bg-[#163b4f] flex flex-col items-center justify-start sm:justify-center p-4 pt-10 sm:pt-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-3">
@@ -69,7 +69,7 @@ export default async function Home({
   const quizTitle = data?.title ?? null
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-[#163b4f] p-4 pb-24">
+    <main className="min-h-screen flex flex-col items-center justify-start sm:justify-center bg-[#163b4f] p-4 pt-10 sm:pt-4 pb-24">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm">
         <div className="flex items-center justify-center gap-2.5 mb-7">
           <img src="/images/logo-yellow.svg" alt="DaTinder" className="h-10 w-auto" />
