@@ -84,7 +84,7 @@ export default async function ResultsPage({
   return (
     <main className="min-h-screen bg-[#163b4f] p-4 pb-24">
       <div className="max-w-sm mx-auto">
-        <div className="text-center pt-10 pb-6">
+        <div className="text-center pt-10 pb-4">
           <Link href="/" className="flex items-center justify-center gap-2 mb-4">
             <img src="/images/logo-yellow.svg" alt="DaTinder" className="h-9 w-auto" />
             <span className="text-white font-bold text-2xl tracking-tight">datinder</span>
@@ -104,6 +104,16 @@ export default async function ResultsPage({
               </a>
             )}
           </div>
+        </div>
+
+        <div className="flex flex-col gap-2 mb-5">
+          <ShareButton name={currentUser.name} matchCount={ranking.length} />
+          <Link
+            href="/"
+            className="block text-center bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl py-3 transition-colors"
+          >
+            Repetir quiz →
+          </Link>
         </div>
 
         {ranking.length === 0 ? (
@@ -174,15 +184,6 @@ export default async function ResultsPage({
           </div>
         )}
 
-        <div className="mt-6 pb-10 flex flex-col gap-3">
-          <ShareButton name={currentUser.name} matchCount={ranking.length} />
-          <Link
-            href="/"
-            className="block text-center bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl py-4 transition-colors"
-          >
-            Repetir quiz →
-          </Link>
-        </div>
       </div>
       <LiveRefresher intervalMs={15000} />
     </main>
