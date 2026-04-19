@@ -40,7 +40,7 @@ export default async function QuizStatsPage({
   const { data: users } = userIds.length
     ? await supabase
         .from('users')
-        .select('id, empresa, linkedin_url, created_at')
+        .select('id, name, empresa, linkedin_url, created_at')
         .in('id', userIds)
     : { data: [] }
 
@@ -81,6 +81,47 @@ export default async function QuizStatsPage({
     .slice(0, 10)
     .map(([name, count]) => ({ name, count }))
 
+  // Top matches between participants
+  const userAnswers = new Map<string, Map<string, number>>()
+  for (const r of responses ?? []) {
+    if (!userAnswers.has(r.user_id)) userAnswers.set(r.user_id, new Map())
+    userAnswers.get(r.user_id)!.set(r.question_id, r.answer)
+  }
+  const userMeta = new Map(
+    (users ?? []).map((u) => [u.id, { name: u.name, linkedin_url: u.linkedin_url ?? null }])
+  )
+
+  const allUsers = Array.from(userAnswers.keys())
+  const pairs: Array<{
+    nameA: string; linkedinA: string | null
+    nameB: string; linkedinB: string | null
+    similarity: number; matches: number; total: number
+  }> = []
+
+  for (let i = 0; i < Math.min(allUsers.length, 80); i++) {
+    for (let j = i + 1; j < Math.min(allUsers.length, 80); j++) {
+      const a = userAnswers.get(allUsers[i])!
+      const b = userAnswers.get(allUsers[j])!
+      let matches = 0, total = 0
+      for (const [qId, ans] of a) {
+        if (b.has(qId)) { total++; if (b.get(qId) === ans) matches++ }
+      }
+      if (total < 5) continue
+      const metaA = userMeta.get(allUsers[i])
+      const metaB = userMeta.get(allUsers[j])
+      pairs.push({
+        nameA: metaA?.name ?? 'Anónimo',
+        linkedinA: metaA?.linkedin_url ?? null,
+        nameB: metaB?.name ?? 'Anónimo',
+        linkedinB: metaB?.linkedin_url ?? null,
+        similarity: Math.round((matches / total) * 100),
+        matches,
+        total,
+      })
+    }
+  }
+  const topPairs = pairs.sort((a, b) => b.similarity - a.similarity).slice(0, 20)
+
   const totalParticipants = userIds.length
   const withLinkedIn = (users ?? []).filter((u) => u.linkedin_url).length
   const totalResponses = responses?.length ?? 0
@@ -93,6 +134,7 @@ export default async function QuizStatsPage({
       questionStats={questionStats}
       participationByDay={participationByDay}
       topCompanies={topCompanies}
+      topPairs={topPairs}
     />
   )
 }
