@@ -73,6 +73,7 @@ export default async function ResultsPage({
       name,
       linkedin_url,
       similarity: total > 0 ? Math.round((matches / total) * 100) : 0,
+      matches,
       shared: total,
     }))
     .sort((a, b) => b.similarity - a.similarity)
@@ -148,7 +149,7 @@ export default async function ResultsPage({
                       <div className="font-bold text-[#021f35] truncate">{r.name}</div>
                     )}
                     <div className="text-xs text-[#163b4f]/40">
-                      {r.shared} preguntas en común
+                      {r.matches}/{r.shared} respuestas iguales
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
