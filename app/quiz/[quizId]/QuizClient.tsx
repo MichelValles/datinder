@@ -12,6 +12,7 @@ const supabase = createClient(
 type Question = {
   id: string
   order_num: number
+  question_text: string
   text_option_a: string
   text_option_b: string
 }
@@ -73,8 +74,8 @@ export default function QuizClient({
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm">
         <div className="p-7 text-center">
           <div className="text-4xl mb-3">🤔</div>
-          <h2 className="text-base font-bold text-gray-500 uppercase tracking-wider mb-6">
-            ¿Con cuál te identificas más?
+          <h2 className="text-base font-bold text-gray-700 mb-6">
+            {q.question_text || '¿Con cuál te identificas más?'}
           </h2>
 
           <div className="flex flex-col gap-3">

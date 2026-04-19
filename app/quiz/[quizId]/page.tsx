@@ -22,7 +22,7 @@ export default async function QuizPage({
 
   const { data: questions, error } = await supabase
     .from('questions')
-    .select('id, order_num, text_option_a, text_option_b')
+    .select('id, order_num, question_text, text_option_a, text_option_b')
     .eq('quiz_id', quizId)
     .order('order_num')
 
