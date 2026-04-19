@@ -58,7 +58,6 @@ export default function ProfilePage() {
     setSigningOut(true)
     await supabase.auth.signOut()
     localStorage.removeItem('datinder_identity')
-    localStorage.removeItem('datinder_quiz_history')
     router.push('/')
   }
 
