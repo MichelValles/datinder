@@ -8,7 +8,7 @@ type OtherResponse = {
   user_id: string
   question_id: string
   answer: number
-  users: { name: string; linkedin_url: string | null }[] | { name: string; linkedin_url: string | null } | null
+  users: { name: string; linkedin_url: string | null; avatar_url: string | null }[] | { name: string; linkedin_url: string | null; avatar_url: string | null } | null
 }
 
 export default async function ResultsPage({
@@ -47,12 +47,12 @@ export default async function ResultsPage({
 
   const { data: otherResponses } = await supabase
     .from('responses')
-    .select('user_id, question_id, answer, users(name, linkedin_url)')
+    .select('user_id, question_id, answer, users(name, linkedin_url, avatar_url)')
     .in('question_id', myQuestionIds)
     .neq('user_id', userId)
     .limit(4000)
 
-  const userMap = new Map<string, { name: string; linkedin_url: string | null; matches: number; total: number }>()
+  const userMap = new Map<string, { name: string; linkedin_url: string | null; avatar_url: string | null; matches: number; total: number }>()
 
   for (const row of ((otherResponses ?? []) as OtherResponse[])) {
     if (!myAnswerMap.has(row.question_id)) continue
@@ -60,6 +60,7 @@ export default async function ResultsPage({
     const entry = userMap.get(row.user_id) ?? {
       name: u?.name ?? 'Anónimo',
       linkedin_url: u?.linkedin_url ?? null,
+      avatar_url: u?.avatar_url ?? null,
       matches: 0,
       total: 0,
     }
@@ -69,9 +70,10 @@ export default async function ResultsPage({
   }
 
   const ranking = Array.from(userMap.values())
-    .map(({ name, linkedin_url, matches, total }) => ({
+    .map(({ name, linkedin_url, avatar_url, matches, total }) => ({
       name,
       linkedin_url,
+      avatar_url,
       similarity: total > 0 ? Math.round((matches / total) * 100) : 0,
       matches,
       shared: total,
@@ -145,6 +147,17 @@ export default async function ResultsPage({
                       <span className="text-[#163b4f]/30 font-bold text-sm">{i + 1}</span>
                     )}
                   </div>
+                  {r.avatar_url ? (
+                    <img
+                      src={r.avatar_url}
+                      alt={r.name}
+                      className="w-9 h-9 rounded-full object-cover shrink-0 ring-2 ring-[#0A66C2]/30"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-[#163b4f]/10 flex items-center justify-center shrink-0">
+                      <span className="text-[#163b4f]/40 font-bold text-sm">{r.name[0]?.toUpperCase()}</span>
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     {r.linkedin_url ? (
                       <a

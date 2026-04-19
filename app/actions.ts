@@ -107,7 +107,8 @@ export async function startQuizDirect(
 export async function createLinkedInUser(
   name: string,
   quizSlug: string | null,
-  providerToken: string | null
+  providerToken: string | null,
+  avatarUrl: string | null = null
 ): Promise<{ url: string; linkedin_url: string | null }> {
   const supabase = db()
 
@@ -145,7 +146,7 @@ export async function createLinkedInUser(
 
   const { data: user, error } = await supabase
     .from('users')
-    .insert({ name, linkedin_url })
+    .insert({ name, linkedin_url, avatar_url: avatarUrl })
     .select('id')
     .single()
 

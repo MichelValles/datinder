@@ -27,7 +27,8 @@ function CallbackHandler() {
         const meta = session.user.user_metadata
         const name: string = meta.full_name ?? meta.name ?? 'Usuario'
         const providerToken: string | null = session.provider_token ?? null
-        const { url, linkedin_url } = await createLinkedInUser(name, quiz ?? null, providerToken)
+        const avatarUrl: string | null = meta.avatar_url ?? meta.picture ?? null
+        const { url, linkedin_url } = await createLinkedInUser(name, quiz ?? null, providerToken, avatarUrl)
         localStorage.setItem('datinder_identity', JSON.stringify({
           name, empresa: null, linkedin_url, isLinkedIn: true,
         }))
