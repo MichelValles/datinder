@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import LocalDate from '@/components/LocalDate'
 
 type QuestionData = {
   id: string
@@ -34,7 +35,7 @@ export default async function ParticipantDetailPage({
   )
 
   const [{ data: user }, { data: questions }] = await Promise.all([
-    supabase.from('users').select('id, name, empresa, created_at').eq('id', userId).single(),
+    supabase.from('users').select('id, name, empresa, linkedin_url, created_at').eq('id', userId).single(),
     supabase.from('questions').select('id, order_num, text_option_a, text_option_b').eq('quiz_id', quizId).order('order_num'),
   ])
 
@@ -42,11 +43,19 @@ export default async function ParticipantDetailPage({
 
   const qIds = questions.map((q) => q.id)
 
-  const { data: myResponses } = await supabase
-    .from('responses')
-    .select('answer, questions(id, order_num, text_option_a, text_option_b)')
-    .eq('user_id', userId)
-    .in('question_id', qIds)
+  const [{ data: myResponses }, { data: othersRaw }] = await Promise.all([
+    supabase
+      .from('responses')
+      .select('answer, questions(id, order_num, text_option_a, text_option_b)')
+      .eq('user_id', userId)
+      .in('question_id', qIds),
+    supabase
+      .from('responses')
+      .select('user_id, question_id, answer, users(name)')
+      .in('question_id', qIds)
+      .neq('user_id', userId)
+      .limit(4000),
+  ])
 
   const myAnswerMap = new Map(
     ((myResponses ?? []) as ResponseRow[]).map((r) => {
@@ -54,12 +63,6 @@ export default async function ParticipantDetailPage({
       return [q?.id, r.answer]
     })
   )
-
-  const { data: othersRaw } = await supabase
-    .from('responses')
-    .select('user_id, question_id, answer, users(name)')
-    .in('question_id', qIds)
-    .neq('user_id', userId)
 
   const matchMap = new Map<string, { name: string; matches: number; total: number }>()
 
@@ -109,12 +112,21 @@ export default async function ParticipantDetailPage({
               </span>
             )}
           </h2>
-          <p className="text-[#163b4f]/40 text-xs mt-0.5">
-            {sortedResponses.length}/{questions.length} respuestas ·{' '}
-            {new Date(user.created_at).toLocaleString('es-ES', {
-              day: 'numeric', month: 'short', year: 'numeric',
-              hour: '2-digit', minute: '2-digit',
-            })}
+          <p className="text-[#163b4f]/40 text-xs mt-0.5 flex items-center gap-2 flex-wrap">
+            <span>{sortedResponses.length}/{questions.length} respuestas · <LocalDate iso={user.created_at} /></span>
+            {user.linkedin_url && (
+              <a
+                href={user.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[#0A66C2] hover:underline"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+                LinkedIn
+              </a>
+            )}
           </p>
         </div>
       </div>

@@ -1,12 +1,14 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import LiveRefresher from '@/components/LiveRefresher'
+import ShareButton from './ShareButton'
 
 type OtherResponse = {
   user_id: string
   question_id: string
   answer: number
-  users: { name: string }[] | { name: string } | null
+  users: { name: string; linkedin_url: string | null }[] | { name: string; linkedin_url: string | null } | null
 }
 
 export default async function ResultsPage({
@@ -22,7 +24,7 @@ export default async function ResultsPage({
   )
 
   const [{ data: currentUser }, { data: myResponses }] = await Promise.all([
-    supabase.from('users').select('name').eq('id', userId).single(),
+    supabase.from('users').select('name, linkedin_url').eq('id', userId).single(),
     supabase.from('responses').select('question_id, answer').eq('user_id', userId),
   ])
 
@@ -45,16 +47,19 @@ export default async function ResultsPage({
 
   const { data: otherResponses } = await supabase
     .from('responses')
-    .select('user_id, question_id, answer, users(name)')
+    .select('user_id, question_id, answer, users(name, linkedin_url)')
     .in('question_id', myQuestionIds)
     .neq('user_id', userId)
+    .limit(4000)
 
-  const userMap = new Map<string, { name: string; matches: number; total: number }>()
+  const userMap = new Map<string, { name: string; linkedin_url: string | null; matches: number; total: number }>()
 
   for (const row of ((otherResponses ?? []) as OtherResponse[])) {
     if (!myAnswerMap.has(row.question_id)) continue
+    const u = Array.isArray(row.users) ? row.users[0] : row.users
     const entry = userMap.get(row.user_id) ?? {
-      name: (Array.isArray(row.users) ? row.users[0]?.name : row.users?.name) ?? 'Anónimo',
+      name: u?.name ?? 'Anónimo',
+      linkedin_url: u?.linkedin_url ?? null,
       matches: 0,
       total: 0,
     }
@@ -64,8 +69,9 @@ export default async function ResultsPage({
   }
 
   const ranking = Array.from(userMap.values())
-    .map(({ name, matches, total }) => ({
+    .map(({ name, linkedin_url, matches, total }) => ({
       name,
+      linkedin_url,
       similarity: total > 0 ? Math.round((matches / total) * 100) : 0,
       shared: total,
     }))
@@ -75,16 +81,28 @@ export default async function ResultsPage({
     i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null
 
   return (
-    <main className="min-h-screen bg-[#163b4f] p-4">
+    <main className="min-h-screen bg-[#163b4f] p-4 pb-24">
       <div className="max-w-sm mx-auto">
         <div className="text-center pt-10 pb-6">
-          <img
-            src="https://i.ibb.co/8gNrP0q6/Chat-GPT-Image-May-29-2025-08-27-01-PM.png"
-            alt="DaTinder"
-            className="h-16 w-auto mx-auto mb-4 object-contain"
-          />
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <img src="/images/logo-yellow.svg" alt="DaTinder" className="h-9 w-auto" />
+            <span className="text-white font-bold text-2xl tracking-tight">datinder</span>
+          </div>
           <h1 className="text-3xl font-bold text-white">Tus matches</h1>
-          <p className="text-white/60 mt-1 text-sm">Hola, {currentUser.name}!</p>
+          <div className="flex items-center justify-center gap-2 mt-1">
+            <p className="text-white/60 text-sm">Hola, {currentUser.name}!</p>
+            {currentUser.linkedin_url && (
+              <a
+                href={currentUser.linkedin_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#0A66C2] bg-white rounded-full p-1 hover:bg-blue-50 transition-colors"
+                title="Tu perfil de LinkedIn"
+              >
+                <LinkedInIcon size={14} />
+              </a>
+            )}
+          </div>
         </div>
 
         {ranking.length === 0 ? (
@@ -117,13 +135,37 @@ export default async function ResultsPage({
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-[#021f35] truncate">{r.name}</div>
+                    {r.linkedin_url ? (
+                      <a
+                        href={r.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-bold text-[#021f35] truncate hover:text-[#0A66C2] transition-colors block"
+                      >
+                        {r.name}
+                      </a>
+                    ) : (
+                      <div className="font-bold text-[#021f35] truncate">{r.name}</div>
+                    )}
                     <div className="text-xs text-[#163b4f]/40">
                       {r.shared} preguntas en común
                     </div>
                   </div>
-                  <div className={`text-2xl font-bold shrink-0 ${scoreColor}`}>
-                    {r.similarity}%
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-2xl font-bold ${scoreColor}`}>
+                      {r.similarity}%
+                    </span>
+                    {r.linkedin_url && (
+                      <a
+                        href={r.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Ver perfil de LinkedIn"
+                        className="flex items-center justify-center w-8 h-8 rounded-full bg-[#0A66C2] hover:bg-[#004182] text-white transition-colors"
+                      >
+                        <LinkedInIcon size={14} />
+                      </a>
+                    )}
                   </div>
                 </div>
               )
@@ -131,15 +173,25 @@ export default async function ResultsPage({
           </div>
         )}
 
-        <div className="mt-6 pb-10">
+        <div className="mt-6 pb-10 flex flex-col gap-3">
+          <ShareButton name={currentUser.name} matchCount={ranking.length} />
           <Link
             href="/"
-            className="block text-center bg-[#edbe00] hover:bg-[#c9a100] text-[#021f35] font-bold rounded-xl py-4 transition-colors"
+            className="block text-center bg-white/10 hover:bg-white/20 text-white font-bold rounded-xl py-4 transition-colors"
           >
             Repetir quiz →
           </Link>
         </div>
       </div>
+      <LiveRefresher intervalMs={15000} />
     </main>
+  )
+}
+
+function LinkedInIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+    </svg>
   )
 }

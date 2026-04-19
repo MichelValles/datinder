@@ -66,14 +66,90 @@ export async function startQuiz(formData: FormData) {
   }
 
   const empresa = (formData.get('empresa') as string)?.trim() || null
+  const linkedin_url = (formData.get('linkedin_url') as string)?.trim() || null
 
   const { data: user, error } = await supabase
     .from('users')
-    .insert({ name, empresa })
+    .insert({ name, empresa, linkedin_url })
     .select('id')
     .single()
 
   if (error || !user) throw new Error('No se pudo crear el usuario')
 
   redirect(`/quiz/${quizId}?userId=${user.id}`)
+}
+
+export async function startQuizDirect(
+  name: string,
+  empresa: string | null,
+  linkedin_url: string | null,
+  quizSlug: string | null
+): Promise<string> {
+  if (!name?.trim()) return '/'
+  const supabase = db()
+
+  const { data: existing } = quizSlug
+    ? await supabase.from('quizzes').select('id').eq('slug', quizSlug).eq('is_finalized', true).maybeSingle()
+    : await supabase.from('quizzes').select('id').eq('is_finalized', true).limit(1).maybeSingle()
+
+  if (!existing) return quizSlug ? `/?quiz=${quizSlug}` : '/'
+
+  const { data: user, error } = await supabase
+    .from('users')
+    .insert({ name: name.trim(), empresa: empresa || null, linkedin_url: linkedin_url || null })
+    .select('id')
+    .single()
+
+  if (error || !user) return '/'
+  return `/quiz/${existing.id}?userId=${user.id}`
+}
+
+export async function createLinkedInUser(
+  name: string,
+  quizSlug: string | null,
+  providerToken: string | null
+): Promise<{ url: string; linkedin_url: string | null }> {
+  const supabase = db()
+
+  let linkedin_url: string | null = null
+  if (providerToken) {
+    try {
+      const res = await fetch(
+        'https://api.linkedin.com/v2/me?projection=(id,vanityName)',
+        { headers: { Authorization: `Bearer ${providerToken}` } }
+      )
+      if (res.ok) {
+        const data = await res.json()
+        if (data.vanityName) linkedin_url = `https://www.linkedin.com/in/${data.vanityName}`
+      }
+    } catch {}
+    // Si no conseguimos la URL real, usamos búsqueda por nombre como fallback
+    // Al menos el icono aparece y lleva a un resultado útil
+    if (!linkedin_url) {
+      linkedin_url = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(name)}`
+    }
+  }
+
+  let quizId: string | null = null
+  if (quizSlug) {
+    const { data: quiz } = await supabase
+      .from('quizzes')
+      .select('id')
+      .eq('slug', quizSlug)
+      .eq('is_finalized', true)
+      .maybeSingle()
+    quizId = quiz?.id ?? null
+  }
+
+  if (!quizId) return { url: quizSlug ? `/?quiz=${quizSlug}` : '/', linkedin_url }
+
+  const { data: user, error } = await supabase
+    .from('users')
+    .insert({ name, linkedin_url })
+    .select('id')
+    .single()
+
+  if (error || !user) return { url: quizSlug ? `/?quiz=${quizSlug}` : '/', linkedin_url }
+
+  return { url: `/quiz/${quizId}?userId=${user.id}`, linkedin_url }
 }

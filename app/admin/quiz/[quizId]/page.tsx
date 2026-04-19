@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { updateQuizSettings, toggleFinalized, deleteQuiz, clearParticipants } from '../../actions'
 import ConfirmForm from '../../components/ConfirmForm'
 import QuizUrlBar from './QuizUrlBar'
+import QRCode from '@/components/QRCode'
 
 export default async function QuizSettingsPage({
   params,
@@ -17,18 +18,12 @@ export default async function QuizSettingsPage({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const { data: quiz } = await supabase
-    .from('quizzes')
-    .select('id, title, slug, is_finalized, created_at')
-    .eq('id', quizId)
-    .single()
+  const [{ data: quiz }, { data: questions }] = await Promise.all([
+    supabase.from('quizzes').select('id, title, slug, is_finalized, created_at').eq('id', quizId).single(),
+    supabase.from('questions').select('id').eq('quiz_id', quizId),
+  ])
 
   if (!quiz) notFound()
-
-  const { data: questions } = await supabase
-    .from('questions')
-    .select('id')
-    .eq('quiz_id', quizId)
 
   const qIds = questions?.map((q) => q.id) ?? []
 
@@ -42,7 +37,7 @@ export default async function QuizSettingsPage({
   }
 
   const h = await headers()
-  const host = h.get('host') ?? 'datinder.vercel.app'
+  const host = h.get('host') ?? 'datinder.fun'
   const proto = host.startsWith('localhost') ? 'http' : 'https'
   const quizUrl = `${proto}://${host}/?quiz=${quiz.slug ?? quizId}`
 
@@ -83,6 +78,23 @@ export default async function QuizSettingsPage({
             Comparte este enlace para que los participantes puedan acceder al quiz.
           </p>
           <QuizUrlBar url={quizUrl} />
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-6 items-center">
+            <div className="bg-white rounded-2xl p-4 shadow-lg shrink-0">
+              <QRCode url={quizUrl} size={140} />
+            </div>
+            <div className="flex flex-col gap-3 w-full">
+              <p className="text-white/60 text-xs">Proyecta el QR en un evento para que los asistentes se unan desde el móvil.</p>
+              <a
+                href={`/quiz/${quizId}/live`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 bg-[#edbe00] hover:bg-[#c9a100] text-[#021f35] font-bold rounded-xl py-3 px-5 text-sm transition-colors"
+              >
+                📺 Abrir modo evento
+              </a>
+            </div>
+          </div>
         </div>
       )}
 

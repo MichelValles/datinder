@@ -10,7 +10,7 @@ export default async function AdminPage() {
   )
 
   const h = await headers()
-  const host = h.get('host') ?? 'datinder.vercel.app'
+  const host = h.get('host') ?? 'datinder.fun'
   const proto = host.startsWith('localhost') ? 'http' : 'https'
 
   const { data: quizzes } = await supabase

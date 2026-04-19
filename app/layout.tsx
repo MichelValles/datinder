@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
+import LinkedInProfileBar from '@/components/LinkedInProfileBar'
 
 const font = Plus_Jakarta_Sans({
   variable: '--font-pjs',
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${font.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <LinkedInProfileBar />
+      </body>
     </html>
   )
 }

@@ -20,13 +20,12 @@ export default async function QuizPage({
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const { data: questions, error } = await supabase
-    .from('questions')
-    .select('id, order_num, question_text, text_option_a, text_option_b')
-    .eq('quiz_id', quizId)
-    .order('order_num')
+  const [{ data: quiz }, { data: questions, error }] = await Promise.all([
+    supabase.from('quizzes').select('title').eq('id', quizId).single(),
+    supabase.from('questions').select('id, order_num, question_text, text_option_a, text_option_b').eq('quiz_id', quizId).order('order_num'),
+  ])
 
   if (error || !questions?.length) notFound()
 
-  return <QuizClient questions={questions} userId={userId} />
+  return <QuizClient questions={questions} userId={userId} quizTitle={quiz?.title ?? null} quizId={quizId} />
 }

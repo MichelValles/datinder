@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { deleteParticipant, clearParticipants } from '../../../actions'
 import ConfirmForm from '../../../components/ConfirmForm'
+import LocalDate from '@/components/LocalDate'
 
 type ParticipantRow = {
   user_id: string
@@ -107,12 +108,7 @@ export default async function ParticipantsPage({
                     </p>
                     <p className="text-xs text-[#163b4f]/40 mt-0.5">
                       {p.answerCount}/{qIds.length} respuestas ·{' '}
-                      {new Date(p.created_at).toLocaleDateString('es-ES', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      <LocalDate iso={p.created_at} format="date" />
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
