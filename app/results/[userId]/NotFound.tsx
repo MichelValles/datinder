@@ -18,7 +18,7 @@ export default function ResultNotFound({ userId }: { userId: string }) {
     <main className="min-h-screen bg-[#163b4f] flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl p-8 text-center w-full max-w-sm shadow-xl">
         <div className="text-5xl mb-4">🗑️</div>
-        <p className="text-[#021f35] font-bold text-lg mb-2">Participante eliminado</p>
+        <p className="text-[#021f35] font-bold text-lg mb-2">Respuestas eliminadas</p>
         <p className="text-[#163b4f]/60 text-sm mb-6">
           Este registro ya no existe. Se ha eliminado de tu historial.
         </p>
