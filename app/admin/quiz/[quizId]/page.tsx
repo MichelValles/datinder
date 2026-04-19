@@ -19,7 +19,7 @@ export default async function QuizSettingsPage({
 
   const { data: quiz } = await supabase
     .from('quizzes')
-    .select('id, title, is_finalized, created_at')
+    .select('id, title, slug, is_finalized, created_at')
     .eq('id', quizId)
     .single()
 
@@ -44,7 +44,7 @@ export default async function QuizSettingsPage({
   const h = await headers()
   const host = h.get('host') ?? 'datinder.vercel.app'
   const proto = host.startsWith('localhost') ? 'http' : 'https'
-  const quizUrl = `${proto}://${host}/?quiz=${quizId}`
+  const quizUrl = `${proto}://${host}/?quiz=${quiz.slug ?? quizId}`
 
   const saveSettings = updateQuizSettings.bind(null, quizId)
   const toggleAction = toggleFinalized.bind(null, quizId, quiz.is_finalized)

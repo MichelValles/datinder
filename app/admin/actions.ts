@@ -38,14 +38,26 @@ export async function logoutAdmin() {
 
 // ── Quizzes ───────────────────────────────────────────────────────────────────
 
+function toSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
 export async function createQuiz(formData: FormData) {
   const title = (formData.get('title') as string)?.trim()
   if (!title) return
 
   const supabase = db()
+  const baseSlug = toSlug(title)
+  const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+
   const { data: quiz, error } = await supabase
     .from('quizzes')
-    .insert({ title })
+    .insert({ title, slug })
     .select('id')
     .single()
 
@@ -66,7 +78,9 @@ export async function createQuiz(formData: FormData) {
 export async function updateQuizSettings(quizId: string, formData: FormData) {
   const title = (formData.get('title') as string)?.trim()
   if (title) {
-    await db().from('quizzes').update({ title }).eq('id', quizId)
+    const baseSlug = toSlug(title)
+    const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`
+    await db().from('quizzes').update({ title, slug }).eq('id', quizId)
   }
   revalidatePath(`/admin/quiz/${quizId}`)
   revalidatePath('/admin')

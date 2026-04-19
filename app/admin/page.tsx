@@ -15,7 +15,7 @@ export default async function AdminPage() {
 
   const { data: quizzes } = await supabase
     .from('quizzes')
-    .select('id, title, is_finalized, created_at')
+    .select('id, title, slug, is_finalized, created_at')
     .order('created_at', { ascending: false })
 
   return (
@@ -82,7 +82,7 @@ export default async function AdminPage() {
             <div className="flex items-center gap-2 shrink-0">
               {q.is_finalized && (
                 <a
-                  href={`${proto}://${host}/?quiz=${q.id}`}
+                  href={`${proto}://${host}/?quiz=${q.slug ?? q.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   title="Abrir quiz"

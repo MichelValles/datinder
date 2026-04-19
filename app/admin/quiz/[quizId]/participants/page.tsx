@@ -6,8 +6,8 @@ import ConfirmForm from '../../../components/ConfirmForm'
 type ParticipantRow = {
   user_id: string
   users:
-    | { id: string; name: string; created_at: string }
-    | { id: string; name: string; created_at: string }[]
+    | { id: string; name: string; empresa: string | null; created_at: string }
+    | { id: string; name: string; empresa: string | null; created_at: string }[]
     | null
 }
 
@@ -33,13 +33,13 @@ export default async function ParticipantsPage({
   const { data: rawResponses } = qIds.length
     ? await supabase
         .from('responses')
-        .select('user_id, users(id, name, created_at)')
+        .select('user_id, users(id, name, empresa, created_at)')
         .in('question_id', qIds)
     : { data: [] }
 
   const userMap = new Map<
     string,
-    { id: string; name: string; created_at: string; answerCount: number }
+    { id: string; name: string; empresa: string | null; created_at: string; answerCount: number }
   >()
 
   for (const row of ((rawResponses ?? []) as ParticipantRow[])) {
@@ -97,7 +97,14 @@ export default async function ParticipantsPage({
                 >
                   <span className="text-[#163b4f]/30 text-sm w-6 text-right shrink-0">{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[#021f35] truncate">{p.name}</p>
+                    <p className="font-semibold text-[#021f35] truncate">
+                      {p.name}
+                      {p.empresa && (
+                        <span className="ml-2 text-xs font-medium text-[#163b4f]/50 bg-[#e8edf1] px-2 py-0.5 rounded-full">
+                          {p.empresa}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-[#163b4f]/40 mt-0.5">
                       {p.answerCount}/{qIds.length} respuestas ·{' '}
                       {new Date(p.created_at).toLocaleDateString('es-ES', {

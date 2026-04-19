@@ -39,11 +39,11 @@ export async function startQuiz(formData: FormData) {
 
   const supabase = db()
 
-  const requestedId = (formData.get('quizId') as string) || null
+  const requestedSlug = (formData.get('quizId') as string) || null
 
-  // Find the target quiz (specific if quizId provided, otherwise any finalized)
-  const { data: existing } = requestedId
-    ? await supabase.from('quizzes').select('id').eq('id', requestedId).eq('is_finalized', true).maybeSingle()
+  // Find the target quiz (by slug if provided, otherwise any finalized)
+  const { data: existing } = requestedSlug
+    ? await supabase.from('quizzes').select('id').eq('slug', requestedSlug).eq('is_finalized', true).maybeSingle()
     : await supabase.from('quizzes').select('id').eq('is_finalized', true).limit(1).maybeSingle()
 
   let quizId: string
@@ -65,9 +65,11 @@ export async function startQuiz(formData: FormData) {
       .insert(QUESTIONS.map(q => ({ ...q, quiz_id: quizId })))
   }
 
+  const empresa = (formData.get('empresa') as string)?.trim() || null
+
   const { data: user, error } = await supabase
     .from('users')
-    .insert({ name })
+    .insert({ name, empresa })
     .select('id')
     .single()
 

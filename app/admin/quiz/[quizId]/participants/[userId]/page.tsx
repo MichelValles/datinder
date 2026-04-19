@@ -34,7 +34,7 @@ export default async function ParticipantDetailPage({
   )
 
   const [{ data: user }, { data: questions }] = await Promise.all([
-    supabase.from('users').select('id, name, created_at').eq('id', userId).single(),
+    supabase.from('users').select('id, name, empresa, created_at').eq('id', userId).single(),
     supabase.from('questions').select('id, order_num, text_option_a, text_option_b').eq('quiz_id', quizId).order('order_num'),
   ])
 
@@ -101,7 +101,14 @@ export default async function ParticipantDetailPage({
           ← Participantes
         </Link>
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl font-bold text-[#021f35] truncate">{user.name}</h2>
+          <h2 className="text-xl font-bold text-[#021f35] truncate">
+            {user.name}
+            {user.empresa && (
+              <span className="ml-2 text-sm font-medium text-[#163b4f]/50 bg-[#e8edf1] px-2.5 py-0.5 rounded-full">
+                {user.empresa}
+              </span>
+            )}
+          </h2>
           <p className="text-[#163b4f]/40 text-xs mt-0.5">
             {sortedResponses.length}/{questions.length} respuestas ·{' '}
             {new Date(user.created_at).toLocaleString('es-ES', {
