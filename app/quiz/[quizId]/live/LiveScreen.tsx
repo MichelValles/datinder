@@ -67,10 +67,10 @@ export default function LiveScreen({
 
       {/* Header */}
       <div className="flex items-center justify-between mb-10">
-        <div className="flex items-center gap-3">
+        <a href="/" className="flex items-center gap-3">
           <img src="/images/logo-yellow.svg" alt="datinder" className="h-12 w-auto" />
           <span className="font-bold text-3xl tracking-tight">datinder</span>
-        </div>
+        </a>
         <div className="text-right">
           <div className="text-white/40 text-xs uppercase tracking-widest">Modo Evento</div>
           <div className="text-white/60 text-sm mt-0.5">{quizTitle}</div>

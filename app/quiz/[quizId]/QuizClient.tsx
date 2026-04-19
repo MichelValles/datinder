@@ -91,10 +91,10 @@ export default function QuizClient({
 
       {/* Logo + título */}
       <div className="flex flex-col items-center gap-1.5 mb-8">
-        <div className="flex items-center gap-2.5">
+        <a href="/" className="flex items-center gap-2.5">
           <img src="/images/logo-yellow.svg" alt="DaTinder" className="h-10 w-auto" />
           <span className="text-[#021f35] font-bold text-3xl tracking-tight">datinder</span>
-        </div>
+        </a>
         {quizTitle && (
           <p className="text-[#163b4f]/50 text-base font-medium">{quizTitle}</p>
         )}

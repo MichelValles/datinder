@@ -84,10 +84,10 @@ export default async function ResultsPage({
     <main className="min-h-screen bg-[#163b4f] p-4 pb-24">
       <div className="max-w-sm mx-auto">
         <div className="text-center pt-10 pb-6">
-          <div className="flex items-center justify-center gap-2 mb-4">
+          <Link href="/" className="flex items-center justify-center gap-2 mb-4">
             <img src="/images/logo-yellow.svg" alt="DaTinder" className="h-9 w-auto" />
             <span className="text-white font-bold text-2xl tracking-tight">datinder</span>
-          </div>
+          </Link>
           <h1 className="text-3xl font-bold text-white">Tus matches</h1>
           <div className="flex items-center justify-center gap-2 mt-1">
             <p className="text-white/60 text-sm">Hola, {currentUser.name}!</p>

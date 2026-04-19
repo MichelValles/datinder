@@ -44,10 +44,10 @@ function WaitingContent() {
 
   return (
     <main className="min-h-screen bg-[#163b4f] flex flex-col items-center justify-center p-6 text-center">
-      <div className="flex items-center gap-2.5 mb-12">
+      <a href="/" className="flex items-center gap-2.5 mb-12">
         <img src="/images/logo-yellow.svg" alt="DaTinder" className="h-10 w-auto" />
         <span className="text-white font-bold text-2xl tracking-tight">datinder</span>
-      </div>
+      </a>
 
       <div className="bg-white/10 border border-white/20 rounded-3xl p-10 max-w-sm w-full flex flex-col items-center gap-6">
         <div className="text-6xl animate-bounce">🎉</div>
