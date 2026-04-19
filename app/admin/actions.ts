@@ -147,7 +147,28 @@ export async function toggleFinalized(quizId: string, current: boolean) {
 }
 
 export async function deleteQuiz(quizId: string) {
-  await db().from('quizzes').delete().eq('id', quizId)
+  const supabase = db()
+
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('id')
+    .eq('quiz_id', quizId)
+
+  if (questions?.length) {
+    const qIds = questions.map((q) => q.id)
+    const { data: responses } = await supabase
+      .from('responses')
+      .select('user_id')
+      .in('question_id', qIds)
+
+    const userIds = [...new Set(responses?.map((r) => r.user_id) ?? [])]
+
+    await supabase.from('responses').delete().in('question_id', qIds)
+    if (userIds.length) await supabase.from('users').delete().in('id', userIds)
+    await supabase.from('questions').delete().eq('quiz_id', quizId)
+  }
+
+  await supabase.from('quizzes').delete().eq('id', quizId)
   revalidatePath('/admin')
   redirect('/admin')
 }

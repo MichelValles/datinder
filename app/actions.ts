@@ -112,24 +112,11 @@ export async function createLinkedInUser(
 ): Promise<{ url: string; linkedin_url: string | null }> {
   const supabase = db()
 
-  let linkedin_url: string | null = null
-  if (providerToken) {
-    try {
-      const res = await fetch(
-        'https://api.linkedin.com/v2/me?projection=(id,vanityName)',
-        { headers: { Authorization: `Bearer ${providerToken}` } }
-      )
-      if (res.ok) {
-        const data = await res.json()
-        if (data.vanityName) linkedin_url = `https://www.linkedin.com/in/${data.vanityName}`
-      }
-    } catch {}
-    // Si no conseguimos la URL real, usamos búsqueda por nombre como fallback
-    // Al menos el icono aparece y lleva a un resultado útil
-    if (!linkedin_url) {
-      linkedin_url = `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(name)}`
-    }
-  }
+  // LinkedIn OIDC no expone vanityName con scopes estándar (openid+profile+email).
+  // Usamos búsqueda por nombre como proxy útil.
+  const linkedin_url: string | null = providerToken
+    ? `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(name)}`
+    : null
 
   let quizId: string | null = null
   if (quizSlug) {

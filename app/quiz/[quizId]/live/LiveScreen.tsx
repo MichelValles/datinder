@@ -25,13 +25,15 @@ export default function LiveScreen({
   const lastFetch = useRef(Date.now())
 
   const refresh = useCallback(async () => {
-    const [c, p] = await Promise.all([
-      getParticipantCount(quizId),
-      getTopPairs(quizId),
-    ])
-    setCount(c)
-    setPairs(p)
-    setLastUpdate(new Date())
+    try {
+      const [c, p] = await Promise.all([
+        getParticipantCount(quizId),
+        getTopPairs(quizId),
+      ])
+      setCount(c)
+      setPairs(p)
+      setLastUpdate(new Date())
+    } catch {}
     lastFetch.current = Date.now()
     setProgress(100)
   }, [quizId])

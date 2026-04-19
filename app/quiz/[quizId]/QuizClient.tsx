@@ -31,6 +31,7 @@ export default function QuizClient({
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState<0 | 1 | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
   const [answers, setAnswers] = useState<Map<number, 0 | 1>>(new Map())
   const router = useRouter()
 
@@ -53,18 +54,28 @@ export default function QuizClient({
     const newAnswers = new Map(answers).set(current, answer)
     setAnswers(newAnswers)
 
-    if (alreadyAnswered) {
-      await supabase
-        .from('responses')
-        .update({ answer })
-        .eq('user_id', userId)
-        .eq('question_id', q.id)
-    } else {
-      await supabase.from('responses').insert({
-        user_id: userId,
-        question_id: q.id,
-        answer,
-      })
+    try {
+      setSaveError(false)
+      if (alreadyAnswered) {
+        const { error } = await supabase
+          .from('responses')
+          .update({ answer })
+          .eq('user_id', userId)
+          .eq('question_id', q.id)
+        if (error) throw error
+      } else {
+        const { error } = await supabase.from('responses').insert({
+          user_id: userId,
+          question_id: q.id,
+          answer,
+        })
+        if (error) throw error
+      }
+    } catch {
+      setSaveError(true)
+      setSaving(false)
+      setSelected(answers.get(current) ?? null)
+      return
     }
 
     await new Promise(r => setTimeout(r, 320))
@@ -124,6 +135,12 @@ export default function QuizClient({
           />
         </div>
       </div>
+
+      {saveError && (
+        <div className="w-full max-w-2xl mb-3 bg-red-50 border border-red-200 rounded-xl px-4 py-2.5 text-red-600 text-sm text-center">
+          Error al guardar. Comprueba tu conexión e inténtalo de nuevo.
+        </div>
+      )}
 
       {/* Card */}
       <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl overflow-hidden">

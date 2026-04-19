@@ -10,7 +10,7 @@ const INTERVAL = 5000
 function WaitingContent() {
   const { quizId } = useParams<{ quizId: string }>()
   const searchParams = useSearchParams()
-  const userId = searchParams.get('userId') ?? ''
+  const userId = searchParams.get('userId') ?? null
 
   const [count, setCount] = useState<number | null>(null)
   const [progress, setProgress] = useState(100)
@@ -80,12 +80,14 @@ function WaitingContent() {
         </div>
       </div>
 
-      <a
-        href={`/results/${userId}`}
-        className="mt-8 bg-[#edbe00] hover:bg-[#c9a100] text-[#021f35] font-bold rounded-2xl px-10 py-4 text-lg transition-colors"
-      >
-        Ver mis matches →
-      </a>
+      {userId && (
+        <a
+          href={`/results/${userId}`}
+          className="mt-8 bg-[#edbe00] hover:bg-[#c9a100] text-[#021f35] font-bold rounded-2xl px-10 py-4 text-lg transition-colors"
+        >
+          Ver mis matches →
+        </a>
+      )}
     </main>
   )
 }

@@ -33,6 +33,7 @@ export default function QuizEntryForm({
   const router = useRouter()
   const [identity, setIdentity] = useState<Identity | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadError, setLoadError] = useState(false)
   const [showFull, setShowFull] = useState(false)
   const [hydrated, setHydrated] = useState(false)
 
@@ -46,13 +47,21 @@ export default function QuizEntryForm({
 
   async function startWithIdentity(id: Identity) {
     setLoading(true)
-    const url = await startQuizDirect(id.name, id.empresa, id.linkedin_url, quizSlug)
-    router.push(url)
+    setLoadError(false)
+    try {
+      const url = await startQuizDirect(id.name, id.empresa, id.linkedin_url, quizSlug)
+      if (url === '/') { setLoadError(true); setLoading(false); return }
+      router.push(url)
+    } catch {
+      setLoadError(true)
+      setLoading(false)
+    }
   }
 
   async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
+    setLoadError(false)
     const fd = new FormData(e.currentTarget)
     const name = (fd.get('name') as string)?.trim()
     const empresa = (fd.get('empresa') as string)?.trim() || null
@@ -60,8 +69,14 @@ export default function QuizEntryForm({
     if (!name) { setLoading(false); return }
     const id: Identity = { name, empresa, linkedin_url, isLinkedIn: false }
     saveIdentity(id)
-    const url = await startQuizDirect(name, empresa, linkedin_url, quizSlug)
-    router.push(url)
+    try {
+      const url = await startQuizDirect(name, empresa, linkedin_url, quizSlug)
+      if (url === '/') { setLoadError(true); setLoading(false); return }
+      router.push(url)
+    } catch {
+      setLoadError(true)
+      setLoading(false)
+    }
   }
 
   function handleLogout() {
@@ -186,6 +201,12 @@ export default function QuizEntryForm({
             </button>
           )}
         </div>
+      )}
+
+      {loadError && (
+        <p className="mt-3 text-red-500 text-xs text-center">
+          No se pudo iniciar el quiz. Comprueba tu conexión e inténtalo de nuevo.
+        </p>
       )}
 
       <div className="mt-5 text-center">
