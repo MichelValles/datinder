@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import LiveRefresher from '@/components/LiveRefresher'
 import ShareButton from './ShareButton'
+import ResultNotFound from './NotFound'
 
 type OtherResponse = {
   user_id: string
@@ -28,7 +28,7 @@ export default async function ResultsPage({
     supabase.from('responses').select('question_id, answer').eq('user_id', userId),
   ])
 
-  if (!currentUser) notFound()
+  if (!currentUser) return <ResultNotFound userId={userId} />
 
   if (!myResponses?.length) {
     return (
